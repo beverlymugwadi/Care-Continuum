@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const { calculateAncSchedule } = require('../utils/ancSchedule');
 
 const ancVisitSchema = new mongoose.Schema(
   {
@@ -9,6 +10,24 @@ const ancVisitSchema = new mongoose.Schema(
     notes: {
       type: String,
       trim: true,
+    },
+  },
+  { _id: false }
+);
+
+const ancScheduleEntrySchema = new mongoose.Schema(
+  {
+    contactNumber: {
+      type: Number,
+      required: true,
+    },
+    gestationalWeek: {
+      type: Number,
+      required: true,
+    },
+    date: {
+      type: Date,
+      required: true,
     },
   },
   { _id: false }
@@ -47,6 +66,18 @@ const motherSchema = new mongoose.Schema({
     type: [ancVisitSchema],
     default: [],
   },
+  ancSchedule: {
+    type: [ancScheduleEntrySchema],
+    default: [],
+  },
+});
+
+// Auto-generate the recommended WHO ANC contact schedule whenever a mother
+// is first registered, or whenever her expected due date changes.
+motherSchema.pre('save', function generateAncSchedule() {
+  if (this.isNew || this.isModified('expectedDueDate')) {
+    this.ancSchedule = calculateAncSchedule(this.expectedDueDate);
+  }
 });
 
 module.exports = mongoose.model('Mother', motherSchema);

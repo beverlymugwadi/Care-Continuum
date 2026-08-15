@@ -53,15 +53,18 @@ exports.updateMother = async (req, res, next) => {
   try {
     const updates = { ...req.body };
     delete updates._id;
+    // ancSchedule is system-generated from expectedDueDate; clients can't set it directly.
+    delete updates.ancSchedule;
 
-    const mother = await Mother.findByIdAndUpdate(req.params.id, updates, {
-      new: true,
-      runValidators: true,
-    });
-
+    const mother = await Mother.findById(req.params.id);
     if (!mother) {
       return res.status(404).json({ error: 'Mother not found' });
     }
+
+    // Use save() rather than findByIdAndUpdate so the pre('save') hook
+    // recalculates ancSchedule when expectedDueDate changes.
+    Object.assign(mother, updates);
+    await mother.save();
 
     res.status(200).json(mother);
   } catch (err) {
