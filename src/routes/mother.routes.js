@@ -7,15 +7,17 @@ const {
   recordBirth,
 } = require('../controllers/mother.controller');
 const { protect } = require('../middleware/auth');
+const validate = require('../middleware/validate');
+const motherValidator = require('../validators/mother.validator');
 
 const router = express.Router();
 
 router.use(protect);
 
-router.post('/', createMother);
+router.post('/', validate(motherValidator.create), createMother);
 router.get('/', getMothers);
-router.get('/:id', getMotherById);
-router.put('/:id', updateMother);
-router.post('/:id/birth', recordBirth);
+router.get('/:id', validate(motherValidator.getById), getMotherById);
+router.put('/:id', validate(motherValidator.update), updateMother);
+router.post('/:id/birth', validate(motherValidator.recordBirth), recordBirth);
 
 module.exports = router;
