@@ -1,5 +1,6 @@
 const Mother = require('../models/Mother');
 const Child = require('../models/Child');
+const { assessGrowth } = require('../utils/growthAssessment');
 
 exports.createMother = async (req, res, next) => {
   try {
@@ -105,6 +106,14 @@ exports.recordBirth = async (req, res, next) => {
     mother.birthDetails = { date, weight, complications };
     await mother.save();
 
+    const assessment = assessGrowth({
+      sex,
+      dateOfBirth: date,
+      measurementDate: date,
+      weight,
+      height,
+    });
+
     const child = await Child.create({
       name: childName || `Baby of ${mother.name}`,
       dateOfBirth: date,
@@ -112,7 +121,7 @@ exports.recordBirth = async (req, res, next) => {
       motherId: mother._id,
       // Birth weight becomes the child's first growth history entry; height
       // is only included if it was measured and provided.
-      growthHistory: [{ date, weight, height }],
+      growthHistory: [{ date, weight, height, assessment }],
     });
 
     res.status(201).json({ mother, child });

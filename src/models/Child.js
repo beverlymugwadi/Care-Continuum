@@ -17,6 +17,17 @@ const growthRecordSchema = new mongoose.Schema(
       type: Number,
       min: 0,
     },
+    // Computed against WHO growth reference data at the time this entry was
+    // logged (see src/utils/growthAssessment.js). Absent for entries that
+    // predate this feature.
+    assessment: {
+      weightForAgeZ: Number,
+      heightForAgeZ: Number,
+      weightForHeightZ: Number,
+      underweight: Boolean,
+      stunting: Boolean,
+      wasting: Boolean,
+    },
   },
   { _id: false }
 );
