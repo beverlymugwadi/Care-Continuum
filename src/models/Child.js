@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const { calculateVaccinationSchedule } = require('../utils/vaccinationSchedule');
 
 const growthRecordSchema = new mongoose.Schema(
   {
@@ -32,24 +33,31 @@ const growthRecordSchema = new mongoose.Schema(
   { _id: false }
 );
 
-const vaccinationRecordSchema = new mongoose.Schema(
-  {
-    vaccine: {
-      type: String,
-      required: true,
-      trim: true,
-    },
-    date: {
-      type: Date,
-      required: true,
-    },
-    notes: {
-      type: String,
-      trim: true,
-    },
+// Note: unlike the other sub-schemas in this file, entries here keep their
+// own auto-generated _id (no `{ _id: false }`) so a specific dose can be
+// targeted individually, e.g. by POST /children/:id/vaccinations/:vaccineId/complete.
+const vaccinationRecordSchema = new mongoose.Schema({
+  vaccine: {
+    type: String,
+    required: true,
+    trim: true,
   },
-  { _id: false }
-);
+  dueDate: {
+    type: Date,
+    required: true,
+  },
+  completed: {
+    type: Boolean,
+    default: false,
+  },
+  completedDate: {
+    type: Date,
+  },
+  notes: {
+    type: String,
+    trim: true,
+  },
+});
 
 const childSchema = new mongoose.Schema({
   name: {
@@ -79,6 +87,14 @@ const childSchema = new mongoose.Schema({
     ref: 'Mother',
     required: true,
   },
+});
+
+// Auto-generate the standard EPI vaccination schedule whenever a child is
+// first created (e.g. from a birth event) and no schedule was supplied.
+childSchema.pre('save', function generateVaccinationSchedule() {
+  if (this.isNew && this.vaccinationRecord.length === 0) {
+    this.vaccinationRecord = calculateVaccinationSchedule(this.dateOfBirth);
+  }
 });
 
 module.exports = mongoose.model('Child', childSchema);

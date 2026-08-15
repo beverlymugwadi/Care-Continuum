@@ -53,3 +53,38 @@ exports.addGrowthRecord = async (req, res, next) => {
     next(err);
   }
 };
+
+// POST /children/:id/vaccinations/:vaccineId/complete
+// Marks one dose in the auto-generated vaccination schedule as completed.
+exports.completeVaccination = async (req, res, next) => {
+  try {
+    const { completedDate, notes } = req.body;
+
+    const child = await Child.findById(req.params.id);
+    if (!child) {
+      return res.status(404).json({ error: 'Child not found' });
+    }
+
+    const entry = child.vaccinationRecord.id(req.params.vaccineId);
+    if (!entry) {
+      return res.status(404).json({ error: 'Vaccination entry not found' });
+    }
+
+    if (entry.completed) {
+      return res.status(409).json({ error: 'This vaccine is already marked as completed' });
+    }
+
+    entry.completed = true;
+    entry.completedDate = completedDate || new Date();
+    if (notes) entry.notes = notes;
+
+    await child.save();
+
+    res.status(200).json({ child, entry });
+  } catch (err) {
+    if (err.name === 'CastError') {
+      return res.status(400).json({ error: 'Invalid child or vaccination ID' });
+    }
+    next(err);
+  }
+};
