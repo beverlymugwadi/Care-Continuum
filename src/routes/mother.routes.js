@@ -4,6 +4,7 @@ const {
   getMothers,
   getMotherById,
   updateMother,
+  recordBirth,
 } = require('../controllers/mother.controller');
 const { protect } = require('../middleware/auth');
 
@@ -15,5 +16,6 @@ router.post('/', createMother);
 router.get('/', getMothers);
 router.get('/:id', getMotherById);
 router.put('/:id', updateMother);
+router.post('/:id/birth', recordBirth);
 
 module.exports = router;

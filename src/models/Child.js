@@ -11,9 +11,10 @@ const growthRecordSchema = new mongoose.Schema(
       required: true,
       min: 0,
     },
+    // Optional: not always measured at the same time as weight (e.g. birth
+    // weight is often recorded before length/height is measured).
     height: {
       type: Number,
-      required: true,
       min: 0,
     },
   },

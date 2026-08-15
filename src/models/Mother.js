@@ -70,6 +70,25 @@ const motherSchema = new mongoose.Schema({
     type: [ancScheduleEntrySchema],
     default: [],
   },
+  status: {
+    type: String,
+    enum: ['pregnant', 'delivered'],
+    default: 'pregnant',
+  },
+  birthDetails: {
+    date: {
+      type: Date,
+    },
+    // Baby's birth weight (kg), recorded at delivery.
+    weight: {
+      type: Number,
+      min: 0,
+    },
+    complications: {
+      type: String,
+      trim: true,
+    },
+  },
 });
 
 // Auto-generate the recommended WHO ANC contact schedule whenever a mother
