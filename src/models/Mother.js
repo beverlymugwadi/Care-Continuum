@@ -89,6 +89,13 @@ const motherSchema = new mongoose.Schema({
       trim: true,
     },
   },
+  // The CHW responsible for this mother's care (set automatically to the
+  // registering user; see mother.controller.js createMother).
+  chw: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true,
+  },
 });
 
 // Auto-generate the recommended WHO ANC contact schedule whenever a mother

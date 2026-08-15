@@ -19,6 +19,8 @@ exports.createMother = async (req, res, next) => {
       location,
       expectedDueDate,
       ancVisitHistory,
+      // Assigned automatically to whichever CHW registers her.
+      chw: req.user._id,
     });
 
     res.status(201).json(mother);
@@ -60,6 +62,7 @@ exports.updateMother = async (req, res, next) => {
     delete updates.ancSchedule;
     delete updates.status;
     delete updates.birthDetails;
+    delete updates.chw;
 
     const mother = await Mother.findById(req.params.id);
     if (!mother) {
