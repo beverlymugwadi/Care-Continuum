@@ -1,23 +1,6 @@
-const express = require('express');
+const app = require('./src/app');
 const config = require('./src/config');
 const connectDB = require('./src/config/db');
-const routes = require('./src/routes');
-const notFound = require('./src/middleware/notFound');
-const errorHandler = require('./src/middleware/errorHandler');
-
-const app = express();
-
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-
-app.use('/api', routes);
-
-app.get('/', (req, res) => {
-  res.send('Care Continuum API is running');
-});
-
-app.use(notFound);
-app.use(errorHandler);
 
 async function start() {
   try {
