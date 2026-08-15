@@ -1,5 +1,6 @@
 const express = require('express');
 const config = require('./src/config');
+const connectDB = require('./src/config/db');
 const routes = require('./src/routes');
 const notFound = require('./src/middleware/notFound');
 const errorHandler = require('./src/middleware/errorHandler');
@@ -18,8 +19,19 @@ app.get('/', (req, res) => {
 app.use(notFound);
 app.use(errorHandler);
 
-app.listen(config.port, () => {
-  console.log(`Care Continuum server running on port ${config.port} (${config.nodeEnv})`);
-});
+async function start() {
+  try {
+    await connectDB();
+  } catch (err) {
+    console.error('✗ Startup aborted: could not connect to MongoDB');
+    process.exit(1);
+  }
+
+  app.listen(config.port, () => {
+    console.log(`✓ Care Continuum server running on port ${config.port} (${config.nodeEnv})`);
+  });
+}
+
+start();
 
 module.exports = app;
