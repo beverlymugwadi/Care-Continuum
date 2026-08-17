@@ -143,16 +143,51 @@ section {
 
 /* Mothers list */
 
-.mothers-list-page table {
+.search-input {
+  display: block;
   width: 100%;
-  border-collapse: collapse;
+  max-width: 320px;
+  margin: 16px 0 24px;
+  padding: 8px 12px;
+  font-size: 14px;
+  border: 1px solid var(--border, #333);
+  border-radius: 6px;
+  background: transparent;
+  color: inherit;
 }
 
-.mothers-list-page th,
-.mothers-list-page td {
-  text-align: left;
-  padding: 8px 12px;
-  border-bottom: 1px solid var(--border, #333);
+.mother-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 16px;
+}
+
+.mother-card {
+  display: block;
+  padding: 16px 20px;
+  border: 1px solid var(--border, #333);
+  border-radius: 8px;
+  color: inherit;
+  text-decoration: none;
+}
+
+.mother-card:hover {
+  border-color: var(--accent, #aa3bff);
+}
+
+.mother-card h2 {
+  margin: 0 0 8px;
+  font-size: 18px;
+}
+
+.mother-card p {
+  margin: 0 0 4px;
+  font-size: 14px;
+  opacity: 0.8;
+}
+
+.mother-card p.error {
+  opacity: 1;
 }
 
 /* Profile pages (Mother / Child) */
