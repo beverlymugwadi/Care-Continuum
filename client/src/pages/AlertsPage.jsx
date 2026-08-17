@@ -1,28 +1,6 @@
 import { useEffect, useState } from 'react';
 import { getReminders } from '../services/remindersService';
-import { formatDate } from '../utils/formatDate';
-
-function ReminderList({ title, items }) {
-  return (
-    <section>
-      <h2>
-        {title} ({items.length})
-      </h2>
-      {items.length === 0 ? (
-        <p className="empty">Nothing here.</p>
-      ) : (
-        <ul>
-          {items.map((item, i) => (
-            <li key={i}>
-              <strong>{item.motherName || item.childName}</strong> — {item.detail} —{' '}
-              {formatDate(item.dueDate)}
-            </li>
-          ))}
-        </ul>
-      )}
-    </section>
-  );
-}
+import ReminderList from '../components/ReminderList';
 
 export default function AlertsPage() {
   const [reminders, setReminders] = useState(null);
