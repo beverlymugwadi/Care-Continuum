@@ -251,3 +251,53 @@ section {
 .profile-page dd {
   margin: 0;
 }
+
+.profile-page .note {
+  font-size: 13px;
+  opacity: 0.75;
+  margin: 0 0 8px;
+}
+
+.status-badge {
+  display: inline-block;
+  font-size: 12px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  border: 1px solid var(--border, #333);
+}
+
+.status-completed {
+  color: #2f9e44;
+  border-color: #2f9e44;
+}
+
+.status-missed {
+  color: #e5484d;
+  border-color: #e5484d;
+}
+
+.status-upcoming {
+  opacity: 0.7;
+}
+
+.log-visit-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-width: 360px;
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border, #333);
+}
+
+.log-visit-form h3 {
+  margin: 0;
+  font-size: 15px;
+}
+
+.log-visit-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 14px;
+}
