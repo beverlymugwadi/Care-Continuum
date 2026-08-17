@@ -1,3 +1,11 @@
+/* App shell: top navbar + side menu + content area */
+
+.app-shell {
+  display: flex;
+  flex-direction: column;
+  min-height: 100svh;
+}
+
 .navbar {
   display: flex;
   align-items: center;
@@ -11,16 +19,69 @@
   text-decoration: none;
 }
 
+.navbar-brand {
+  font-weight: 600;
+}
+
 .navbar-actions {
   display: flex;
   align-items: center;
   gap: 16px;
 }
 
-.app-main {
-  max-width: 720px;
-  margin: 0 auto;
-  padding: 24px;
+.app-body {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+}
+
+.sidebar {
+  width: 180px;
+  flex-shrink: 0;
+  border-right: 1px solid var(--border, #333);
+  padding: 24px 0;
+}
+
+.sidebar ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.sidebar a {
+  display: block;
+  padding: 10px 24px;
+  color: inherit;
+  text-decoration: none;
+  opacity: 0.75;
+}
+
+.sidebar a:hover {
+  opacity: 1;
+}
+
+.sidebar a.active {
+  opacity: 1;
+  font-weight: 600;
+  border-left: 3px solid var(--accent, #aa3bff);
+  padding-left: 21px;
+}
+
+.app-content {
+  flex: 1;
+  min-width: 0;
+  padding: 24px 32px;
+  text-align: left;
+}
+
+/* Auth pages (rendered outside the app shell) */
+
+.auth-page {
+  max-width: 320px;
+  margin: 48px auto;
+  padding: 0 24px;
   text-align: left;
 }
 
@@ -28,7 +89,6 @@
   display: flex;
   flex-direction: column;
   gap: 12px;
-  max-width: 320px;
 }
 
 .auth-page label {
@@ -37,6 +97,8 @@
   gap: 4px;
   font-size: 14px;
 }
+
+/* Shared */
 
 .error {
   color: #e5484d;
@@ -47,10 +109,66 @@
   font-size: 14px;
 }
 
-.dashboard-page section {
+section {
   margin-bottom: 24px;
 }
 
-.dashboard-page ul {
-  padding-left: 20px;
+/* Dashboard */
+
+.dashboard-cards {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.dashboard-cards .card {
+  display: block;
+  min-width: 200px;
+  padding: 16px 20px;
+  border: 1px solid var(--border, #333);
+  border-radius: 8px;
+  color: inherit;
+  text-decoration: none;
+}
+
+.dashboard-cards .card h2 {
+  margin: 0 0 8px;
+}
+
+.dashboard-cards .card p {
+  margin: 0;
+  font-size: 14px;
+  opacity: 0.8;
+}
+
+/* Mothers list */
+
+.mothers-list-page table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.mothers-list-page th,
+.mothers-list-page td {
+  text-align: left;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--border, #333);
+}
+
+/* Profile pages (Mother / Child) */
+
+.profile-page dl {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 4px 16px;
+  margin: 0 0 24px;
+}
+
+.profile-page dt {
+  opacity: 0.7;
+  font-size: 14px;
+}
+
+.profile-page dd {
+  margin: 0;
 }
