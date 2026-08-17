@@ -27,7 +27,12 @@ export default function MothersListPage() {
 
   return (
     <div className="mothers-list-page">
-      <h1>Mothers</h1>
+      <div className="page-header">
+        <h1>Mothers</h1>
+        <Link to="/mothers/new" className="button-link">
+          + Register mother
+        </Link>
+      </div>
 
       <input
         type="search"

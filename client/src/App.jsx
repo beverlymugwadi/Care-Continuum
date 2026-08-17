@@ -5,6 +5,7 @@ import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import DashboardPage from './pages/DashboardPage';
 import MothersListPage from './pages/MothersListPage';
+import NewMotherPage from './pages/NewMotherPage';
 import MotherProfilePage from './pages/MotherProfilePage';
 import ChildProfilePage from './pages/ChildProfilePage';
 import AlertsPage from './pages/AlertsPage';
@@ -22,6 +23,7 @@ function App() {
         <Route element={<Layout />}>
           <Route path="/" element={<DashboardPage />} />
           <Route path="/mothers" element={<MothersListPage />} />
+          <Route path="/mothers/new" element={<NewMotherPage />} />
           <Route path="/mothers/:id" element={<MotherProfilePage />} />
           <Route path="/children/:id" element={<ChildProfilePage />} />
           <Route path="/alerts" element={<AlertsPage />} />
