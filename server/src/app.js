@@ -1,4 +1,6 @@
 const express = require('express');
+const cors = require('cors');
+const config = require('./config');
 const routes = require('./routes');
 const notFound = require('./middleware/notFound');
 const errorHandler = require('./middleware/errorHandler');
@@ -9,6 +11,7 @@ const errorHandler = require('./middleware/errorHandler');
 // port or connecting to MongoDB on import.
 const app = express();
 
+app.use(cors({ origin: config.clientOrigins }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 

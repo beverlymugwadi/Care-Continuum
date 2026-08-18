@@ -50,8 +50,49 @@
   }
 }
 
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
 body {
   margin: 0;
+}
+
+/* Form controls: consistent, touch-friendly sizing everywhere. 16px is
+   also the minimum that keeps iOS Safari from auto-zooming when a field
+   is focused -- a real usability problem on a phone-first app. */
+input,
+select,
+textarea {
+  font: inherit;
+  font-size: 16px;
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: transparent;
+  color: inherit;
+}
+
+/* Minimum ~44px touch target (Apple HIG / WCAG 2.5.5) for every button in
+   the app, without having to restate it per component. */
+button {
+  font: inherit;
+  font-size: 16px;
+  min-height: 44px;
+  padding: 10px 20px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}
+
+button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 #root {
