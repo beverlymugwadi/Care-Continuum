@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
-import { getMotherById, updateMother } from '../services/motherService';
+import { useParams, useNavigate } from 'react-router-dom';
+import { getMotherById, updateMother, recordBirth } from '../services/motherService';
 import { formatDate } from '../utils/formatDate';
 import { PREGNANCY_DANGER_SIGNS } from '../data/dangerSigns';
 
@@ -19,6 +19,7 @@ function ancContactStatus(contact, completedCount) {
 
 export default function MotherProfilePage() {
   const { id } = useParams();
+  const navigate = useNavigate();
   const [mother, setMother] = useState(null);
   const [error, setError] = useState('');
 
@@ -26,6 +27,16 @@ export default function MotherProfilePage() {
   const [visitNotes, setVisitNotes] = useState('');
   const [logging, setLogging] = useState(false);
   const [logError, setLogError] = useState('');
+
+  const [showBirthForm, setShowBirthForm] = useState(false);
+  const [birthDate, setBirthDate] = useState(todayInputValue());
+  const [birthWeight, setBirthWeight] = useState('');
+  const [sex, setSex] = useState('');
+  const [childName, setChildName] = useState('');
+  const [complications, setComplications] = useState('');
+  const [birthSubmitting, setBirthSubmitting] = useState(false);
+  const [birthError, setBirthError] = useState('');
+  const [birthErrorDetails, setBirthErrorDetails] = useState([]);
 
   useEffect(() => {
     getMotherById(id)
@@ -52,6 +63,26 @@ export default function MotherProfilePage() {
       setLogError(err.response?.data?.error || 'Failed to log visit');
     } finally {
       setLogging(false);
+    }
+  }
+
+  async function handleRecordBirth(e) {
+    e.preventDefault();
+    setBirthError('');
+    setBirthErrorDetails([]);
+    setBirthSubmitting(true);
+    try {
+      const payload = { date: birthDate, weight: Number(birthWeight), sex };
+      if (childName.trim()) payload.childName = childName.trim();
+      if (complications.trim()) payload.complications = complications.trim();
+
+      const result = await recordBirth(id, payload);
+      navigate(`/children/${result.child._id}`);
+    } catch (err) {
+      setBirthError(err.response?.data?.error || 'Failed to record birth');
+      setBirthErrorDetails(err.response?.data?.details || []);
+    } finally {
+      setBirthSubmitting(false);
     }
   }
 
@@ -119,6 +150,93 @@ export default function MotherProfilePage() {
               {logging ? 'Logging…' : 'Log visit'}
             </button>
           </form>
+        </section>
+      )}
+
+      {mother.status !== 'delivered' && (
+        <section>
+          <h2>Birth</h2>
+          {!showBirthForm ? (
+            <button type="button" onClick={() => setShowBirthForm(true)}>
+              Record birth
+            </button>
+          ) : (
+            <form className="log-visit-form" onSubmit={handleRecordBirth}>
+              <h3>Record birth</h3>
+              <label>
+                Birth date
+                <input
+                  type="date"
+                  value={birthDate}
+                  onChange={(e) => setBirthDate(e.target.value)}
+                  required
+                />
+              </label>
+              <label>
+                Weight (kg)
+                <input
+                  type="number"
+                  step="0.1"
+                  min="0"
+                  value={birthWeight}
+                  onChange={(e) => setBirthWeight(e.target.value)}
+                  required
+                />
+              </label>
+              <label>
+                Sex
+                <select value={sex} onChange={(e) => setSex(e.target.value)} required>
+                  <option value="" disabled>
+                    Select…
+                  </option>
+                  <option value="female">Female</option>
+                  <option value="male">Male</option>
+                </select>
+              </label>
+              <label>
+                Child's name (optional)
+                <input
+                  type="text"
+                  value={childName}
+                  onChange={(e) => setChildName(e.target.value)}
+                  placeholder={`Baby of ${mother.name}`}
+                />
+              </label>
+              <label>
+                Complications (optional)
+                <input
+                  type="text"
+                  value={complications}
+                  onChange={(e) => setComplications(e.target.value)}
+                  placeholder="e.g. none, prolonged labor"
+                />
+              </label>
+
+              {birthError && <p className="error">{birthError}</p>}
+              {birthErrorDetails.length > 0 && (
+                <ul className="error error-list">
+                  {birthErrorDetails.map((d, i) => (
+                    <li key={i}>
+                      {d.field}: {d.message}
+                    </li>
+                  ))}
+                </ul>
+              )}
+
+              <div className="form-actions">
+                <button type="submit" disabled={birthSubmitting}>
+                  {birthSubmitting ? 'Recording…' : 'Save birth record'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShowBirthForm(false)}
+                  disabled={birthSubmitting}
+                >
+                  Cancel
+                </button>
+              </div>
+            </form>
+          )}
         </section>
       )}
 

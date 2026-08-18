@@ -258,6 +258,16 @@ section {
   margin: 0 0 8px;
 }
 
+.warning-banner {
+  padding: 12px 16px;
+  margin-bottom: 24px;
+  border: 1px solid #e5484d;
+  border-radius: 8px;
+  background: rgba(229, 72, 77, 0.1);
+  color: #e5484d;
+  font-size: 14px;
+}
+
 .status-badge {
   display: inline-block;
   font-size: 12px;
@@ -300,4 +310,19 @@ section {
   flex-direction: column;
   gap: 4px;
   font-size: 14px;
+}
+
+.log-visit-form input,
+.log-visit-form select {
+  padding: 6px 8px;
+  font-size: 14px;
+  border: 1px solid var(--border, #333);
+  border-radius: 6px;
+  background: transparent;
+  color: inherit;
+}
+
+.form-actions {
+  display: flex;
+  gap: 8px;
 }
