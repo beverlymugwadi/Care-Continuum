@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { getMotherById, updateMother, recordBirth } from '../services/motherService';
+import { getMotherById, recordBirth } from '../services/motherService';
 import { formatDate } from '../utils/formatDate';
 import { PREGNANCY_DANGER_SIGNS } from '../data/dangerSigns';
+import { useSync } from '../context/SyncContext';
 
 function todayInputValue() {
   return new Date().toISOString().slice(0, 10);
@@ -20,6 +21,7 @@ function ancContactStatus(contact, completedCount) {
 export default function MotherProfilePage() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { submitAncVisit } = useSync();
   const [mother, setMother] = useState(null);
   const [error, setError] = useState('');
 
@@ -27,6 +29,7 @@ export default function MotherProfilePage() {
   const [visitNotes, setVisitNotes] = useState('');
   const [logging, setLogging] = useState(false);
   const [logError, setLogError] = useState('');
+  const [logNotice, setLogNotice] = useState('');
 
   const [showBirthForm, setShowBirthForm] = useState(false);
   const [birthDate, setBirthDate] = useState(todayInputValue());
@@ -47,17 +50,18 @@ export default function MotherProfilePage() {
   async function handleLogVisit(e) {
     e.preventDefault();
     setLogError('');
+    setLogNotice('');
     setLogging(true);
     try {
-      // The API replaces ancVisitHistory wholesale on PUT, so we send the
-      // existing entries plus the new one, not just the new one.
       const newEntry = { date: visitDate };
       if (visitNotes.trim()) newEntry.notes = visitNotes.trim();
 
-      const updated = await updateMother(id, {
-        ancVisitHistory: [...mother.ancVisitHistory, newEntry],
-      });
-      setMother(updated);
+      const result = await submitAncVisit(id, newEntry);
+      if (result.queued) {
+        setLogNotice("Saved offline — this visit will sync automatically once you're back online.");
+      } else {
+        setMother(result.mother);
+      }
       setVisitNotes('');
     } catch (err) {
       setLogError(err.response?.data?.error || 'Failed to log visit');
@@ -146,6 +150,7 @@ export default function MotherProfilePage() {
               />
             </label>
             {logError && <p className="error">{logError}</p>}
+            {logNotice && <p className="notice">{logNotice}</p>}
             <button type="submit" disabled={logging}>
               {logging ? 'Logging…' : 'Log visit'}
             </button>

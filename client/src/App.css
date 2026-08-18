@@ -110,6 +110,34 @@
   font-size: 13px;
 }
 
+.notice {
+  color: #f0ad4e;
+  font-size: 14px;
+}
+
+.offline-banner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 24px;
+  font-size: 14px;
+}
+
+.offline-banner-offline {
+  background: rgba(240, 173, 78, 0.15);
+  color: #f0ad4e;
+}
+
+.offline-banner-syncing {
+  background: rgba(59, 130, 246, 0.12);
+  color: #3b82f6;
+}
+
+.offline-banner button {
+  font-size: 13px;
+  padding: 4px 10px;
+}
+
 .empty {
   opacity: 0.7;
   font-size: 14px;

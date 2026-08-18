@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { getChildById, logGrowthRecord } from '../services/childService';
+import { getChildById } from '../services/childService';
 import { formatDate } from '../utils/formatDate';
 import { riskLabels } from '../utils/growth';
+import { useSync } from '../context/SyncContext';
 
 function todayInputValue() {
   return new Date().toISOString().slice(0, 10);
@@ -10,6 +11,7 @@ function todayInputValue() {
 
 export default function ChildProfilePage() {
   const { id } = useParams();
+  const { submitGrowthEntry } = useSync();
   const [child, setChild] = useState(null);
   const [error, setError] = useState('');
 
@@ -19,6 +21,7 @@ export default function ChildProfilePage() {
   const [submitting, setSubmitting] = useState(false);
   const [formError, setFormError] = useState('');
   const [formErrorDetails, setFormErrorDetails] = useState([]);
+  const [formNotice, setFormNotice] = useState('');
   const [lastRisks, setLastRisks] = useState([]);
 
   useEffect(() => {
@@ -31,14 +34,22 @@ export default function ChildProfilePage() {
     e.preventDefault();
     setFormError('');
     setFormErrorDetails([]);
+    setFormNotice('');
     setSubmitting(true);
     try {
       const payload = { date, weight: Number(weight) };
       if (height.trim()) payload.height = Number(height);
 
-      const result = await logGrowthRecord(id, payload);
-      setChild(result.child);
-      setLastRisks(riskLabels(result.assessment));
+      const result = await submitGrowthEntry(id, payload);
+      if (result.queued) {
+        // The underweight/stunting/wasting check runs server-side, so a
+        // queued entry can't be flagged until it actually syncs.
+        setFormNotice("Saved offline — this entry will sync automatically once you're back online.");
+        setLastRisks([]);
+      } else {
+        setChild(result.child);
+        setLastRisks(riskLabels(result.assessment));
+      }
       setWeight('');
       setHeight('');
     } catch (err) {
@@ -125,6 +136,7 @@ export default function ChildProfilePage() {
               ))}
             </ul>
           )}
+          {formNotice && <p className="notice">{formNotice}</p>}
 
           <button type="submit" disabled={submitting}>
             {submitting ? 'Logging…' : 'Log entry'}

@@ -1,6 +1,7 @@
 import { Outlet } from 'react-router-dom';
 import Navbar from './Navbar';
 import Sidebar from './Sidebar';
+import OfflineBanner from './OfflineBanner';
 
 /**
  * App shell for every authenticated page: top navbar + left side menu
@@ -11,6 +12,7 @@ export default function Layout() {
   return (
     <div className="app-shell">
       <Navbar />
+      <OfflineBanner />
       <div className="app-body">
         <Sidebar />
         <main className="app-content">
