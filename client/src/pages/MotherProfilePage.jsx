@@ -1,6 +1,11 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getMotherById, recordBirth } from '../services/motherService';
+import {
+  getMotherNotifications,
+  resendNotification,
+  recordHealthAlert,
+} from '../services/notificationService';
 import { formatDate } from '../utils/formatDate';
 import { PREGNANCY_DANGER_SIGNS } from '../data/dangerSigns';
 import { useSync } from '../context/SyncContext';
@@ -41,11 +46,30 @@ export default function MotherProfilePage() {
   const [birthError, setBirthError] = useState('');
   const [birthErrorDetails, setBirthErrorDetails] = useState([]);
 
+  const [notifications, setNotifications] = useState(null);
+  const [notificationsError, setNotificationsError] = useState('');
+  const [resendingId, setResendingId] = useState(null);
+
+  const [alertDescription, setAlertDescription] = useState('');
+  const [alertSubmitting, setAlertSubmitting] = useState(false);
+  const [alertError, setAlertError] = useState('');
+  const [alertNotice, setAlertNotice] = useState('');
+
   useEffect(() => {
     getMotherById(id)
       .then(setMother)
       .catch((err) => setError(err.response?.data?.error || 'Failed to load mother'));
   }, [id]);
+
+  function loadNotifications() {
+    getMotherNotifications(id)
+      .then(setNotifications)
+      .catch((err) =>
+        setNotificationsError(err.response?.data?.error || 'Failed to load notifications')
+      );
+  }
+
+  useEffect(loadNotifications, [id]);
 
   async function handleLogVisit(e) {
     e.preventDefault();
@@ -61,12 +85,42 @@ export default function MotherProfilePage() {
         setLogNotice("Saved offline — this visit will sync automatically once you're back online.");
       } else {
         setMother(result.mother);
+        loadNotifications(); // logging a visit also notifies her -- refresh the list
       }
       setVisitNotes('');
     } catch (err) {
       setLogError(err.response?.data?.error || 'Failed to log visit');
     } finally {
       setLogging(false);
+    }
+  }
+
+  async function handleResend(notificationId) {
+    setResendingId(notificationId);
+    try {
+      const updated = await resendNotification(id, notificationId);
+      setNotifications((prev) => prev.map((n) => (n._id === notificationId ? updated : n)));
+    } catch (err) {
+      setNotificationsError(err.response?.data?.error || 'Failed to resend notification');
+    } finally {
+      setResendingId(null);
+    }
+  }
+
+  async function handleRecordHealthAlert(e) {
+    e.preventDefault();
+    setAlertError('');
+    setAlertNotice('');
+    setAlertSubmitting(true);
+    try {
+      await recordHealthAlert(id, alertDescription.trim());
+      setAlertNotice('The mother has been notified and advised to seek care.');
+      setAlertDescription('');
+      loadNotifications();
+    } catch (err) {
+      setAlertError(err.response?.data?.error || 'Failed to record health alert');
+    } finally {
+      setAlertSubmitting(false);
     }
   }
 
@@ -274,6 +328,58 @@ export default function MotherProfilePage() {
             <li key={sign}>{sign}</li>
           ))}
         </ul>
+
+        <form className="log-visit-form" onSubmit={handleRecordHealthAlert}>
+          <h3>Record a health concern</h3>
+          <label>
+            What did you observe?
+            <input
+              type="text"
+              value={alertDescription}
+              onChange={(e) => setAlertDescription(e.target.value)}
+              placeholder="e.g. reported severe headache and blurred vision"
+              required
+            />
+          </label>
+          {alertError && <p className="error">{alertError}</p>}
+          {alertNotice && <p className="notice">{alertNotice}</p>}
+          <button type="submit" disabled={alertSubmitting}>
+            {alertSubmitting ? 'Sending…' : 'Notify mother'}
+          </button>
+        </form>
+      </section>
+
+      <section>
+        <h2>Notifications sent to this mother</h2>
+        {notificationsError && <p className="error">{notificationsError}</p>}
+        {!notificationsError && !notifications && <p>Loading…</p>}
+        {notifications && notifications.length === 0 && (
+          <p className="empty">No notifications yet.</p>
+        )}
+        {notifications && notifications.length > 0 && (
+          <ul className="notification-list">
+            {notifications.map((n) => (
+              <li key={n._id}>
+                <div>
+                  <strong>{n.title}</strong>{' '}
+                  <span className={`status-badge status-${n.status}`}>{n.status}</span>
+                  <p>{n.message}</p>
+                  <span className="note">
+                    {formatDate(n.createdAt)}
+                    {n.error ? ` — ${n.error}` : ''}
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => handleResend(n._id)}
+                  disabled={resendingId === n._id}
+                >
+                  {resendingId === n._id ? 'Sending…' : 'Resend'}
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
       </section>
     </div>
   );

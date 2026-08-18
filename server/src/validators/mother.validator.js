@@ -53,4 +53,32 @@ const recordBirth = {
   }),
 };
 
-module.exports = { create, update, getById, recordBirth };
+const listNotifications = {
+  params: idParams,
+};
+
+const notificationParams = Joi.object({
+  id: objectId.required(),
+  notificationId: objectId.required(),
+});
+
+const resendNotification = {
+  params: notificationParams,
+};
+
+const healthAlert = {
+  params: idParams,
+  body: Joi.object({
+    description: Joi.string().trim().min(1).required(),
+  }),
+};
+
+module.exports = {
+  create,
+  update,
+  getById,
+  recordBirth,
+  listNotifications,
+  resendNotification,
+  healthAlert,
+};

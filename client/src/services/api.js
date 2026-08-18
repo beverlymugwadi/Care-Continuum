@@ -13,14 +13,23 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-// Centralize the "your session is invalid/expired" case: any 401 clears
-// the stored token so the app falls back to a logged-out state instead of
-// silently retrying with a token the API has already rejected.
+// api.js is a plain module, not a component, so it can't call useAuth()
+// directly. AuthContext registers itself here on mount so a 401 anywhere
+// in the app can actually clear React's auth state -- not just
+// localStorage -- which is what makes ProtectedRoute redirect to /login
+// instead of leaving a dead page up with a token the API already rejected.
+let onUnauthorized = null;
+export function setUnauthorizedHandler(fn) {
+  onUnauthorized = fn;
+}
+
 api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
       localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      if (onUnauthorized) onUnauthorized();
     }
     return Promise.reject(error);
   }

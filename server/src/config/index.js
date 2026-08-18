@@ -11,4 +11,7 @@ module.exports = {
   clientOrigins: (process.env.CLIENT_ORIGIN || 'http://localhost:5173')
     .split(',')
     .map((origin) => origin.trim()),
+  // How often the mother-notification due/overdue scan runs (see server.js
+  // and src/services/notificationEngine.js).
+  notificationScanIntervalHours: Number(process.env.NOTIFICATION_SCAN_INTERVAL_HOURS) || 24,
 };

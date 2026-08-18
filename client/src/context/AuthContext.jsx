@@ -1,5 +1,6 @@
-import { createContext, useContext, useState, useCallback } from 'react';
+import { createContext, useContext, useState, useCallback, useEffect } from 'react';
 import * as authService from '../services/authService';
+import { setUnauthorizedHandler } from '../services/api';
 
 const AuthContext = createContext(null);
 
@@ -48,6 +49,15 @@ export function AuthProvider({ children }) {
     setToken(null);
     setUser(null);
   }, []);
+
+  // Any 401 from the API (expired/invalid/deleted-user token) should drop
+  // us into the same logged-out state a manual logout would -- otherwise
+  // ProtectedRoute never re-evaluates and a protected page is left up
+  // showing errors for a session the server already rejected.
+  useEffect(() => {
+    setUnauthorizedHandler(logout);
+    return () => setUnauthorizedHandler(null);
+  }, [logout]);
 
   const value = {
     token,

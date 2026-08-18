@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { getChildById } from '../services/childService';
+import { getChildById, completeVaccination } from '../services/childService';
 import { formatDate } from '../utils/formatDate';
 import { riskLabels } from '../utils/growth';
 import { useSync } from '../context/SyncContext';
@@ -23,6 +23,9 @@ export default function ChildProfilePage() {
   const [formErrorDetails, setFormErrorDetails] = useState([]);
   const [formNotice, setFormNotice] = useState('');
   const [lastRisks, setLastRisks] = useState([]);
+
+  const [completingId, setCompletingId] = useState(null);
+  const [vaxError, setVaxError] = useState('');
 
   useEffect(() => {
     getChildById(id)
@@ -57,6 +60,19 @@ export default function ChildProfilePage() {
       setFormErrorDetails(err.response?.data?.details || []);
     } finally {
       setSubmitting(false);
+    }
+  }
+
+  async function handleCompleteVaccination(vaccineId) {
+    setVaxError('');
+    setCompletingId(vaccineId);
+    try {
+      const result = await completeVaccination(id, vaccineId);
+      setChild(result.child);
+    } catch (err) {
+      setVaxError(err.response?.data?.error || 'Failed to mark vaccination as given');
+    } finally {
+      setCompletingId(null);
     }
   }
 
@@ -146,11 +162,23 @@ export default function ChildProfilePage() {
 
       <section>
         <h2>Vaccinations</h2>
-        <ul>
+        {vaxError && <p className="error">{vaxError}</p>}
+        <ul className="vaccination-list">
           {child.vaccinationRecord.map((dose) => (
             <li key={dose._id}>
-              {dose.vaccine} — due {formatDate(dose.dueDate)}
-              {dose.completed ? ` — given ${formatDate(dose.completedDate)}` : ' — pending'}
+              <span>
+                {dose.vaccine} — due {formatDate(dose.dueDate)}
+                {dose.completed && ` — given ${formatDate(dose.completedDate)}`}
+              </span>
+              {!dose.completed && (
+                <button
+                  type="button"
+                  onClick={() => handleCompleteVaccination(dose._id)}
+                  disabled={completingId === dose._id}
+                >
+                  {completingId === dose._id ? 'Saving…' : 'Mark given'}
+                </button>
+              )}
             </li>
           ))}
         </ul>

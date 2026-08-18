@@ -1,6 +1,7 @@
 const Mother = require('../models/Mother');
 const Child = require('../models/Child');
 const asyncHandler = require('../utils/asyncHandler');
+const { addMonths, ageInMonths } = require('../utils/dateMath');
 
 const REMINDER_WINDOW_DAYS = 7;
 
@@ -13,20 +14,6 @@ const GROWTH_CHECKUP_INTERVAL_MONTHS = 3;
 // Stop generating growth-checkup reminders past this age -- beyond this the
 // WHO growth reference data (see whoGrowthReference.js) no longer applies.
 const GROWTH_CHECKUP_MAX_AGE_MONTHS = 60;
-
-function addMonths(date, months) {
-  const d = new Date(date);
-  d.setMonth(d.getMonth() + months);
-  return d;
-}
-
-function ageInMonths(dateOfBirth, atDate) {
-  const dob = new Date(dateOfBirth);
-  const ref = new Date(atDate);
-  let months = (ref.getFullYear() - dob.getFullYear()) * 12 + (ref.getMonth() - dob.getMonth());
-  if (ref.getDate() < dob.getDate()) months -= 1;
-  return Math.max(0, months);
-}
 
 // Classifies a due date as 'overdue' (already past), 'upcoming' (within the
 // reminder window), or null (too far in the future to report yet).

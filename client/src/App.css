@@ -369,6 +369,20 @@ section {
   opacity: 0.7;
 }
 
+.status-sent {
+  color: #2f9e44;
+  border-color: #2f9e44;
+}
+
+.status-failed {
+  color: #e5484d;
+  border-color: #e5484d;
+}
+
+.status-pending {
+  opacity: 0.7;
+}
+
 .log-visit-form {
   display: flex;
   flex-direction: column;
@@ -395,4 +409,49 @@ section {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
+}
+
+.vaccination-list li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 6px 0;
+}
+
+.vaccination-list button {
+  flex-shrink: 0;
+  min-height: 36px;
+  padding: 6px 14px;
+  font-size: 14px;
+}
+
+.notification-list {
+  padding: 0;
+  list-style: none;
+}
+
+.notification-list li {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border, #333);
+}
+
+.notification-list li:last-child {
+  border-bottom: none;
+}
+
+.notification-list p {
+  margin: 4px 0;
+  font-size: 14px;
+}
+
+.notification-list button {
+  flex-shrink: 0;
+  min-height: 36px;
+  padding: 6px 14px;
+  font-size: 14px;
 }

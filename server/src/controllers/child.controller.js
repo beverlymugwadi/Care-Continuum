@@ -1,7 +1,9 @@
 const Child = require('../models/Child');
+const Mother = require('../models/Mother');
 const { assessGrowth } = require('../utils/growthAssessment');
 const ApiError = require('../utils/ApiError');
 const asyncHandler = require('../utils/asyncHandler');
+const notificationEngine = require('../services/notificationEngine');
 
 exports.getChildById = asyncHandler(async (req, res) => {
   const child = await Child.findById(req.params.id);
@@ -35,6 +37,25 @@ exports.addGrowthRecord = asyncHandler(async (req, res) => {
 
   const savedEntry = child.growthHistory[child.growthHistory.length - 1];
 
+  const mother = await Mother.findById(child.motherId);
+  if (mother) {
+    await notificationEngine.notifyGrowthRecorded(mother, child, savedEntry).catch((err) => {
+      console.error('Failed to send growth-recorded notification:', err.message);
+    });
+
+    // Automatic health alert: a flagged measurement is itself a "danger
+    // sign" the system detected, not just a routine record update.
+    const flags = [];
+    if (assessment.underweight) flags.push('underweight');
+    if (assessment.stunting) flags.push('stunting');
+    if (assessment.wasting) flags.push('wasting');
+    if (flags.length > 0) {
+      await notificationEngine
+        .notifyDangerSign(mother, { child, flags: flags.join(', ') })
+        .catch((err) => console.error('Failed to send danger-sign notification:', err.message));
+    }
+  }
+
   res.status(201).json({ child, entry: savedEntry, assessment });
 });
 
@@ -62,6 +83,13 @@ exports.completeVaccination = asyncHandler(async (req, res) => {
   if (notes) entry.notes = notes;
 
   await child.save();
+
+  const mother = await Mother.findById(child.motherId);
+  if (mother) {
+    await notificationEngine.notifyVaccinationRecorded(mother, child, entry).catch((err) => {
+      console.error('Failed to send vaccination-recorded notification:', err.message);
+    });
+  }
 
   res.status(200).json({ child, entry });
 });
