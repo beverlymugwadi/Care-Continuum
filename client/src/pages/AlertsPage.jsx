@@ -18,8 +18,8 @@ export default function AlertsPage() {
   return (
     <div className="alerts-page">
       <h1>Alerts</h1>
-      <ReminderList title="Overdue" items={reminders.overdue} />
-      <ReminderList title="Upcoming (next 7 days)" items={reminders.upcoming} />
+      <ReminderList title="Overdue" items={reminders.overdue} tone="danger" />
+      <ReminderList title="Upcoming — next 7 days" items={reminders.upcoming} tone="accent" />
     </div>
   );
 }

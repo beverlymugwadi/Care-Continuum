@@ -1,8 +1,10 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { getMothers } from '../services/motherService';
-import { formatDate } from '../utils/formatDate';
+import { formatDate, daysUntil } from '../utils/formatDate';
 import { getAncStatus } from '../utils/anc';
+import Icon from '../components/Icon';
+import ProgressBar from '../components/ProgressBar';
 
 export default function MothersListPage() {
   const [mothers, setMothers] = useState(null);
@@ -28,9 +30,13 @@ export default function MothersListPage() {
   return (
     <div className="mothers-list-page">
       <div className="page-header">
-        <h1>Mothers</h1>
+        <div>
+          <h1>Mothers</h1>
+          {mothers.length > 0 && <p>{mothers.length} registered</p>}
+        </div>
         <Link to="/mothers/new" className="button-link">
-          + Register mother
+          <Icon name="plus" size={16} color="#fff" />
+          Register mother
         </Link>
       </div>
 
@@ -51,11 +57,43 @@ export default function MothersListPage() {
         <div className="mother-cards">
           {filtered.map((mother) => {
             const anc = getAncStatus(mother);
+            const delivered = mother.status === 'delivered';
+            const completed = mother.ancVisitHistory.length;
+            const total = mother.ancSchedule.length;
+            const badgeTone = delivered ? 'status-completed' : anc.overdue ? 'status-missed' : 'status-upcoming';
+            const badgeLabel = delivered ? 'Delivered' : anc.overdue ? 'Overdue' : 'Upcoming';
+            const days = daysUntil(mother.expectedDueDate);
+
             return (
               <Link to={`/mothers/${mother._id}`} key={mother._id} className="mother-card">
-                <h2>{mother.name}</h2>
-                <p>Due: {formatDate(mother.expectedDueDate)}</p>
-                <p className={anc.overdue ? 'error' : ''}>{anc.label}</p>
+                <div className="mother-card-header">
+                  <h2>{mother.name}</h2>
+                  <span className={`status-badge ${badgeTone}`}>{badgeLabel}</span>
+                </div>
+
+                <div className="mother-card-location">
+                  <Icon name="pin" size={14} />
+                  {mother.location}
+                </div>
+
+                <div className="mother-card-progress">
+                  <div className="mother-card-progress-label">
+                    <span>ANC visits</span>
+                    <span>
+                      {completed} of {total}
+                    </span>
+                  </div>
+                  <ProgressBar value={completed} max={total} />
+                </div>
+
+                <div className="mother-card-footer">
+                  <span>
+                    {delivered ? 'Delivered' : 'Due'} {formatDate(delivered ? mother.birthDetails?.date : mother.expectedDueDate)}
+                  </span>
+                  {!delivered && days !== null && (
+                    <strong>{days >= 0 ? `${days} days to go` : `${Math.abs(days)} days overdue`}</strong>
+                  )}
+                </div>
               </Link>
             );
           })}

@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
 import { getChildById, completeVaccination } from '../services/childService';
 import { formatDate } from '../utils/formatDate';
 import { riskLabels } from '../utils/growth';
 import { useSync } from '../context/SyncContext';
+import Icon from '../components/Icon';
 
 function todayInputValue() {
   return new Date().toISOString().slice(0, 10);
@@ -81,6 +82,10 @@ export default function ChildProfilePage() {
 
   return (
     <div className="profile-page">
+      <Link to={child.motherId ? `/mothers/${child.motherId}` : '/mothers'} className="back-link">
+        <Icon name="chevronRight" size={14} style={{ transform: 'rotate(180deg)' }} />
+        Back to mother's profile
+      </Link>
       <h1>{child.name}</h1>
       <dl>
         <dt>Date of birth</dt>
@@ -91,7 +96,8 @@ export default function ChildProfilePage() {
 
       {lastRisks.length > 0 && (
         <div className="warning-banner" role="alert">
-          ⚠ This entry flags: {lastRisks.join(', ')}. Consider referring for further assessment.
+          <Icon name="alert" size={20} />
+          <span>This entry flags: {lastRisks.join(', ')}. Consider referring for further assessment.</span>
         </div>
       )}
 
@@ -100,14 +106,21 @@ export default function ChildProfilePage() {
         {child.growthHistory.length === 0 ? (
           <p className="empty">No growth entries yet.</p>
         ) : (
-          <ul>
+          <ul className="growth-history">
             {child.growthHistory.map((entry, i) => {
               const labels = riskLabels(entry.assessment);
               return (
-                <li key={i}>
-                  {formatDate(entry.date)} — {entry.weight}kg
-                  {entry.height ? `, ${entry.height}cm` : ''}
-                  {labels.length > 0 && <span className="error"> — {labels.join(', ')}</span>}
+                <li key={i} className="list-row">
+                  <span className="icon-square icon-square--upcoming">
+                    <Icon name="chart" size={17} color="#fff" />
+                  </span>
+                  <span className="list-row-text">
+                    <strong>{formatDate(entry.date)}</strong>
+                    <span>
+                      {entry.weight}kg{entry.height ? `, ${entry.height}cm` : ''}
+                    </span>
+                  </span>
+                  {labels.length > 0 && <span className="status-badge status-missed">{labels.join(', ')}</span>}
                 </li>
               );
             })}
@@ -164,23 +177,37 @@ export default function ChildProfilePage() {
         <h2>Vaccinations</h2>
         {vaxError && <p className="error">{vaxError}</p>}
         <ul className="vaccination-list">
-          {child.vaccinationRecord.map((dose) => (
-            <li key={dose._id}>
-              <span>
-                {dose.vaccine} — due {formatDate(dose.dueDate)}
-                {dose.completed && ` — given ${formatDate(dose.completedDate)}`}
-              </span>
-              {!dose.completed && (
-                <button
-                  type="button"
-                  onClick={() => handleCompleteVaccination(dose._id)}
-                  disabled={completingId === dose._id}
-                >
-                  {completingId === dose._id ? 'Saving…' : 'Mark given'}
-                </button>
-              )}
-            </li>
-          ))}
+          {child.vaccinationRecord.map((dose) => {
+            const overdue = !dose.completed && new Date(dose.dueDate) < new Date();
+            const tone = dose.completed ? 'success' : overdue ? 'danger' : 'upcoming';
+            return (
+              <li key={dose._id} className="list-row">
+                <span className={`icon-square icon-square--${tone}`}>
+                  <Icon name="vial" size={17} color="#fff" />
+                </span>
+                <span className="list-row-text">
+                  <strong>{dose.vaccine}</strong>
+                  <span>
+                    {dose.completed
+                      ? `Given ${formatDate(dose.completedDate)}`
+                      : `Due ${formatDate(dose.dueDate)}`}
+                  </span>
+                </span>
+                {dose.completed && <span className="status-badge status-completed">Given</span>}
+                {!dose.completed && overdue && <span className="status-badge status-missed">Overdue</span>}
+                {!dose.completed && (
+                  <button
+                    type="button"
+                    className="btn-secondary btn-small"
+                    onClick={() => handleCompleteVaccination(dose._id)}
+                    disabled={completingId === dose._id}
+                  >
+                    {completingId === dose._id ? 'Saving…' : 'Mark given'}
+                  </button>
+                )}
+              </li>
+            );
+          })}
         </ul>
       </section>
     </div>

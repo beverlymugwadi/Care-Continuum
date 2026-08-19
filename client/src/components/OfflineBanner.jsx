@@ -1,4 +1,5 @@
 import { useSync } from '../context/SyncContext';
+import Icon from './Icon';
 
 export default function OfflineBanner() {
   const { isOnline, queue, syncing, retryNow } = useSync();
@@ -9,6 +10,8 @@ export default function OfflineBanner() {
 
   return (
     <div className={`offline-banner ${isOnline ? 'offline-banner-syncing' : 'offline-banner-offline'}`}>
+      <Icon name={isOnline ? 'refresh' : 'wifiOff'} size={16} />
+
       {!isOnline && (
         <span>
           You're offline. ANC visits and growth entries will be saved on this device and synced
@@ -25,7 +28,7 @@ export default function OfflineBanner() {
             {failedCount > 0 && !syncing && ` (${failedCount} failed)`}
           </span>
           {!syncing && (
-            <button type="button" onClick={retryNow}>
+            <button type="button" className="btn-secondary btn-small" onClick={retryNow}>
               Retry now
             </button>
           )}

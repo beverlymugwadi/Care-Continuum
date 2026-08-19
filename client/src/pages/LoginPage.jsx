@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import Icon from '../components/Icon';
 
 export default function LoginPage() {
   const { login } = useAuth();
@@ -29,30 +30,41 @@ export default function LoginPage() {
 
   return (
     <div className="auth-page">
-      <h1>Log in</h1>
-      <form onSubmit={handleSubmit}>
-        <label>
-          Email
-          <input type="email" name="email" value={form.email} onChange={handleChange} required />
-        </label>
-        <label>
-          Password
-          <input
-            type="password"
-            name="password"
-            value={form.password}
-            onChange={handleChange}
-            required
-          />
-        </label>
-        {error && <p className="error">{error}</p>}
-        <button type="submit" disabled={submitting}>
-          {submitting ? 'Logging in…' : 'Log in'}
-        </button>
-      </form>
-      <p>
-        No account? <Link to="/register">Register</Link>
-      </p>
+      <div className="auth-card">
+        <div className="auth-brand">
+          <span className="auth-brand-mark">
+            <Icon name="heart" size={17} color="#fff" />
+          </span>
+          <span className="auth-brand-name">Care Continuum</span>
+        </div>
+
+        <h1>Welcome back</h1>
+        <p>Log in to continue caring for your mothers and children.</p>
+
+        <form onSubmit={handleSubmit}>
+          <label>
+            Email
+            <input type="email" name="email" value={form.email} onChange={handleChange} required />
+          </label>
+          <label>
+            Password
+            <input
+              type="password"
+              name="password"
+              value={form.password}
+              onChange={handleChange}
+              required
+            />
+          </label>
+          {error && <p className="error">{error}</p>}
+          <button type="submit" disabled={submitting}>
+            {submitting ? 'Logging in…' : 'Log in'}
+          </button>
+        </form>
+        <p>
+          No account? <Link to="/register">Register</Link>
+        </p>
+      </div>
     </div>
   );
 }

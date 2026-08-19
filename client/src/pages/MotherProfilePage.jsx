@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import { getMotherById, recordBirth } from '../services/motherService';
 import {
   getMotherNotifications,
@@ -9,6 +9,7 @@ import {
 import { formatDate } from '../utils/formatDate';
 import { PREGNANCY_DANGER_SIGNS } from '../data/dangerSigns';
 import { useSync } from '../context/SyncContext';
+import Icon from '../components/Icon';
 
 function todayInputValue() {
   return new Date().toISOString().slice(0, 10);
@@ -151,6 +152,10 @@ export default function MotherProfilePage() {
 
   return (
     <div className="profile-page">
+      <Link to="/mothers" className="back-link">
+        <Icon name="chevronRight" size={14} style={{ transform: 'rotate(180deg)' }} />
+        Back to mothers
+      </Link>
       <h1>{mother.name}</h1>
       <dl>
         <dt>Age</dt>
@@ -173,10 +178,18 @@ export default function MotherProfilePage() {
           <ul className="anc-schedule">
             {mother.ancSchedule.map((contact) => {
               const status = ancContactStatus(contact, completedContacts);
+              const tone = status === 'Completed' ? 'success' : status === 'Missed' ? 'danger' : 'accent';
               return (
-                <li key={contact.contactNumber}>
-                  Contact {contact.contactNumber} (week {contact.gestationalWeek}) —{' '}
-                  {formatDate(contact.date)} —{' '}
+                <li key={contact.contactNumber} className="list-row">
+                  <span className={`icon-square icon-square--${tone}`}>
+                    <Icon name={status === 'Completed' ? 'check' : 'calendar'} size={17} color="#fff" />
+                  </span>
+                  <span className="list-row-text">
+                    <strong>
+                      Contact {contact.contactNumber} — week {contact.gestationalWeek}
+                    </strong>
+                    <span>{formatDate(contact.date)}</span>
+                  </span>
                   <span className={`status-badge status-${status.toLowerCase()}`}>{status}</span>
                 </li>
               );
@@ -216,7 +229,7 @@ export default function MotherProfilePage() {
         <section>
           <h2>Birth</h2>
           {!showBirthForm ? (
-            <button type="button" onClick={() => setShowBirthForm(true)}>
+            <button type="button" className="btn-secondary" onClick={() => setShowBirthForm(true)}>
               Record birth
             </button>
           ) : (
@@ -288,6 +301,7 @@ export default function MotherProfilePage() {
                 </button>
                 <button
                   type="button"
+                  className="btn-secondary"
                   onClick={() => setShowBirthForm(false)}
                   disabled={birthSubmitting}
                 >
@@ -318,12 +332,17 @@ export default function MotherProfilePage() {
       )}
 
       <section>
-        <h2>Danger signs — seek care immediately</h2>
+        <div className="banner banner--danger">
+          <Icon name="heart" size={20} />
+          <div>
+            <strong>Danger signs — seek care soon</strong>
+            <p>If the mother reports any of the following, refer her for urgent care right away.</p>
+          </div>
+        </div>
         <p className="note">
-          If the mother reports any of the following, refer her for urgent care right away. This
-          list is general reference only — follow your program's official protocol.
+          This list is general reference only — follow your program's official protocol.
         </p>
-        <ul>
+        <ul className="danger-signs-list">
           {PREGNANCY_DANGER_SIGNS.map((sign) => (
             <li key={sign}>{sign}</li>
           ))}
@@ -359,18 +378,22 @@ export default function MotherProfilePage() {
         {notifications && notifications.length > 0 && (
           <ul className="notification-list">
             {notifications.map((n) => (
-              <li key={n._id}>
-                <div>
-                  <strong>{n.title}</strong>{' '}
-                  <span className={`status-badge status-${n.status}`}>{n.status}</span>
-                  <p>{n.message}</p>
-                  <span className="note">
+              <li key={n._id} className="list-row">
+                <span className="icon-square icon-square--accent">
+                  <Icon name="send" size={16} color="#fff" />
+                </span>
+                <span className="list-row-text">
+                  <strong>{n.title}</strong>
+                  <span>{n.message}</span>
+                  <span>
                     {formatDate(n.createdAt)}
                     {n.error ? ` — ${n.error}` : ''}
                   </span>
-                </div>
+                </span>
+                <span className={`status-badge status-${n.status}`}>{n.status}</span>
                 <button
                   type="button"
+                  className="btn-secondary btn-small"
                   onClick={() => handleResend(n._id)}
                   disabled={resendingId === n._id}
                 >

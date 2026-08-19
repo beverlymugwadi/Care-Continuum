@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { createMother } from '../services/motherService';
+import Icon from '../components/Icon';
 
 const initialForm = {
   name: '',
@@ -39,7 +40,14 @@ export default function NewMotherPage() {
 
   return (
     <div className="form-page">
+      <Link to="/mothers" className="back-link">
+        <Icon name="chevronRight" size={14} style={{ transform: 'rotate(180deg)' }} />
+        Back to mothers
+      </Link>
       <h1>Register a mother</h1>
+      <p style={{ color: 'var(--text-muted)', fontSize: 13, margin: '0 0 20px' }}>
+        We'll use her due date to generate her antenatal care schedule automatically.
+      </p>
       <form onSubmit={handleSubmit}>
         <label>
           Name
@@ -102,9 +110,6 @@ export default function NewMotherPage() {
           {submitting ? 'Registering…' : 'Register mother'}
         </button>
       </form>
-      <p>
-        <Link to="/mothers">Back to mothers list</Link>
-      </p>
     </div>
   );
 }
