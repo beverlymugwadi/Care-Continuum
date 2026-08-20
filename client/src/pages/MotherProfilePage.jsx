@@ -32,9 +32,13 @@ export default function MotherProfilePage() {
   const [error, setError] = useState('');
 
   const [visitDate, setVisitDate] = useState(todayInputValue());
+  const [visitBloodPressure, setVisitBloodPressure] = useState('');
+  const [visitWeight, setVisitWeight] = useState('');
+  const [visitComplications, setVisitComplications] = useState('');
   const [visitNotes, setVisitNotes] = useState('');
   const [logging, setLogging] = useState(false);
   const [logError, setLogError] = useState('');
+  const [logErrorDetails, setLogErrorDetails] = useState([]);
   const [logNotice, setLogNotice] = useState('');
 
   const [showBirthForm, setShowBirthForm] = useState(false);
@@ -75,10 +79,14 @@ export default function MotherProfilePage() {
   async function handleLogVisit(e) {
     e.preventDefault();
     setLogError('');
+    setLogErrorDetails([]);
     setLogNotice('');
     setLogging(true);
     try {
       const newEntry = { date: visitDate };
+      if (visitBloodPressure.trim()) newEntry.bloodPressure = visitBloodPressure.trim();
+      if (visitWeight.trim()) newEntry.weight = Number(visitWeight);
+      if (visitComplications.trim()) newEntry.complications = visitComplications.trim();
       if (visitNotes.trim()) newEntry.notes = visitNotes.trim();
 
       const result = await submitAncVisit(id, newEntry);
@@ -88,9 +96,13 @@ export default function MotherProfilePage() {
         setMother(result.mother);
         loadNotifications(); // logging a visit also notifies her -- refresh the list
       }
+      setVisitBloodPressure('');
+      setVisitWeight('');
+      setVisitComplications('');
       setVisitNotes('');
     } catch (err) {
       setLogError(err.response?.data?.error || 'Failed to log visit');
+      setLogErrorDetails(err.response?.data?.details || []);
     } finally {
       setLogging(false);
     }
@@ -179,6 +191,17 @@ export default function MotherProfilePage() {
             {mother.ancSchedule.map((contact) => {
               const status = ancContactStatus(contact, completedContacts);
               const tone = status === 'Completed' ? 'success' : status === 'Missed' ? 'danger' : 'accent';
+              // For a completed contact, the Nth schedule entry corresponds
+              // to the Nth logged visit (same "fulfilled in order" rule
+              // used to derive `status` itself) -- so its recorded detail
+              // is available to show here.
+              const visit = status === 'Completed' ? mother.ancVisitHistory[contact.contactNumber - 1] : null;
+              const visitSummary = visit
+                ? [visit.bloodPressure && `BP ${visit.bloodPressure}`, visit.weight != null && `${visit.weight}kg`]
+                    .filter(Boolean)
+                    .join(' · ')
+                : '';
+
               return (
                 <li key={contact.contactNumber} className="list-row">
                   <span className={`icon-square icon-square--${tone}`}>
@@ -188,7 +211,12 @@ export default function MotherProfilePage() {
                     <strong>
                       Contact {contact.contactNumber} — week {contact.gestationalWeek}
                     </strong>
-                    <span>{formatDate(contact.date)}</span>
+                    <span>
+                      {formatDate(contact.date)}
+                      {visitSummary && ` — ${visitSummary}`}
+                    </span>
+                    {visit?.complications && <span className="error">Complications: {visit.complications}</span>}
+                    {visit?.notes && <span>{visit.notes}</span>}
                   </span>
                   <span className={`status-badge status-${status.toLowerCase()}`}>{status}</span>
                 </li>
@@ -207,16 +235,56 @@ export default function MotherProfilePage() {
                 required
               />
             </label>
+            <div className="form-row">
+              <label>
+                Blood pressure (optional)
+                <input
+                  type="text"
+                  value={visitBloodPressure}
+                  onChange={(e) => setVisitBloodPressure(e.target.value)}
+                  placeholder="e.g. 120/80"
+                />
+              </label>
+              <label>
+                Weight (kg, optional)
+                <input
+                  type="number"
+                  step="0.1"
+                  min="0"
+                  value={visitWeight}
+                  onChange={(e) => setVisitWeight(e.target.value)}
+                  placeholder="e.g. 62"
+                />
+              </label>
+            </div>
+            <label>
+              Complications / concerns (optional)
+              <input
+                type="text"
+                value={visitComplications}
+                onChange={(e) => setVisitComplications(e.target.value)}
+                placeholder="e.g. mild swelling in feet"
+              />
+            </label>
             <label>
               Notes (optional)
               <input
                 type="text"
                 value={visitNotes}
                 onChange={(e) => setVisitNotes(e.target.value)}
-                placeholder="e.g. BP normal, iron supplements given"
+                placeholder="e.g. iron supplements given"
               />
             </label>
             {logError && <p className="error">{logError}</p>}
+            {logErrorDetails.length > 0 && (
+              <ul className="error error-list">
+                {logErrorDetails.map((d, i) => (
+                  <li key={i}>
+                    {d.field}: {d.message}
+                  </li>
+                ))}
+              </ul>
+            )}
             {logNotice && <p className="notice">{logNotice}</p>}
             <button type="submit" disabled={logging}>
               {logging ? 'Logging…' : 'Log visit'}

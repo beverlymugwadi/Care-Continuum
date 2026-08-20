@@ -7,6 +7,9 @@ const idParams = Joi.object({
 
 const ancVisit = Joi.object({
   date: Joi.date().required(),
+  bloodPressure: Joi.string().trim().allow(''),
+  weight: Joi.number().min(0),
+  complications: Joi.string().trim().allow(''),
   notes: Joi.string().trim().allow(''),
 });
 

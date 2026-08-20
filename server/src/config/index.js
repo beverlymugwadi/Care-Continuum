@@ -14,4 +14,16 @@ module.exports = {
   // How often the mother-notification due/overdue scan runs (see server.js
   // and src/services/notificationEngine.js).
   notificationScanIntervalHours: Number(process.env.NOTIFICATION_SCAN_INTERVAL_HOURS) || 24,
+
+  // Twilio (see src/services/smsProvider.js). All optional -- if unset, SMS
+  // sending falls back to a console-log stub so the app still runs without
+  // an SMS account. TWILIO_MESSAGING_SERVICE_SID takes priority over
+  // TWILIO_PHONE_NUMBER when both are set (needed for an alphanumeric
+  // sender ID, e.g. required for reliable delivery in Zimbabwe).
+  twilio: {
+    accountSid: process.env.TWILIO_ACCOUNT_SID,
+    authToken: process.env.TWILIO_AUTH_TOKEN,
+    phoneNumber: process.env.TWILIO_PHONE_NUMBER,
+    messagingServiceSid: process.env.TWILIO_MESSAGING_SERVICE_SID,
+  },
 };

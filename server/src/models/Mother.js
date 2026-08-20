@@ -7,6 +7,23 @@ const ancVisitSchema = new mongoose.Schema(
       type: Date,
       required: true,
     },
+    // Free-form so it accommodates however the CHW's cuff/chart reports it
+    // (e.g. "120/80"), rather than forcing separate systolic/diastolic
+    // number fields for what's usually read off a single display.
+    bloodPressure: {
+      type: String,
+      trim: true,
+    },
+    // Mother's weight (kg) at this visit -- distinct from the child's own
+    // growth entries recorded post-birth.
+    weight: {
+      type: Number,
+      min: 0,
+    },
+    complications: {
+      type: String,
+      trim: true,
+    },
     notes: {
       type: String,
       trim: true,
